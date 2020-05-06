@@ -700,11 +700,19 @@ void execute(Runnable command);
 
 #### synchronized
 
-基本使用
+##### 基本使用
 
-TODO
+获取对象锁
 
-##### 锁的实现原理
+- 同步代码块 `synchronized(this)` `synchronized(实例对象)` 锁是小括号中的实例对象
+- 同步非静态方法`synchronized method` 锁是当前对象的实例对象
+
+获取类锁
+
+- 同步代码块 `synchronized (类.class)` 锁是小括号中的类对象（Class对象）
+- 同步静态方法 `synchronized static method` 锁是当前对象的类对象（Class对象）
+
+##### 实现原理
 
 TODO
 

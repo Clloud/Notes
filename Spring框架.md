@@ -198,13 +198,13 @@ Spring事务引入了事务传播的概念，提供多个事务的合并和隔�
 
 ### 编程式
 
-- 需要手动编写代码，比较繁琐，在实际开发中很少使用
+需要在代码中调用beginTransaction()、commit()、rollback()等事务管理相关的方法，比较繁琐
 
 ### 声明式
 
 - 基于TransactionProxyFactoryBean，需要为每个进行事务管理的类做相应配置
 
-- 基于AspectJ的XML，在XML文件中进行配置，不需要改动类
+- 基于AspectJ AOP，在XML文件中进行配置，不需要改动类
 
 - 基于注解@Transactional，配置简单，需要在业务层类中添加注解
 
