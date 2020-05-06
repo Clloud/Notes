@@ -93,9 +93,11 @@ BeanFactory是Spring框架的核心接口
 
 ## ApplicationContext
 
-BeanFactory是Spring框架的基础设置，面向Spring，而ApplicationContext面向使用Spring框架的开发者，继承多个接口。
+BeanFactory是Spring框架的基础设置，面向Spring，而ApplicationContext面向使用Spring框架的开发者。
 
 ### 功能
+
+ApplicationContext继承了多个接口，具有以下功能
 
 - BeanFactory：能够装配、管理Bean
 - ApplicationEvenetPublisher：能够注册监听器，实现监听机制
@@ -168,9 +170,43 @@ class LogAspect {
 
 # 四、Spring 事务
 
-Spring事务实现方式、隔离级别、传播
+## 隔离级别
 
-TODO
+| 名称                       | 描述                                             |
+| -------------------------- | ------------------------------------------------ |
+| ISOLATION_DEFAULT          | 默认选项。使用数据库默认的事务隔离级别           |
+| ISOLATION_READ_UNCOMMITTED | 事务中的修改，即使没有提交，对其它事务也是可见的 |
+| ISOLATION_READ_COMMITTED   | 保证一个事务只能读取已经提交的事务所做的修改     |
+| ISOLATION_REPEATABLE_READ  | 保证在同一个事务中多次读取同一数据的结果是一样的 |
+| ISOLATION_SERIALIZABLE     | 保证事务串行执行                                 |
+
+## 传播机制
+
+Spring事务引入了事务传播的概念，提供多个事务的合并和隔离功能。
+
+| 名称                      | 描述                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| PROPAGATION_REQUIRED      | 默认选项。支持当前事务，如果当前没有事务，就新建一个事务     |
+| PROPAGATION_SUPPORTS      | 支持当前事务，如果当前没有事务，就以非事务方式执行           |
+| PROPAGATION_MANDATORY     | 支持当前事务，如果当前没有事务，就抛出异常                   |
+| PROPAGATION_REQUIRES_NEW  | 新建事务，如果当前存在事务，把当前事务挂起                   |
+| PROPAGATION_NOT_SUPPORTED | 以非事务方式执行操作，如果当前存在事务，就把当前事务挂起     |
+| PROPAGATION_NEVER         | 以非事务方式执行，如果当前存在事务，则抛出异常               |
+| PROPAGATION_NESTED        | 如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作 |
+
+## 事务管理
+
+### 编程式
+
+- 需要手动编写代码，比较繁琐，在实际开发中很少使用
+
+### 声明式
+
+- 基于TransactionProxyFactoryBean，需要为每个进行事务管理的类做相应配置
+
+- 基于AspectJ的XML，在XML文件中进行配置，不需要改动类
+
+- 基于注解@Transactional，配置简单，需要在业务层类中添加注解
 
 # 五、Spring MVC
 
