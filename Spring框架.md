@@ -1,8 +1,8 @@
 # 一、Spring Framework
 
-[扩展阅读：极客学院Spring教程](https://wiki.jikexueyuan.com/project/spring/)
+[官方文档](https://spring.io/projects/spring-framework#overview)
 
-[Spring常见面试题](https://mp.weixin.qq.com/s?__biz=MzU3NDg0MTY0NQ==&mid=2247483792&idx=2&sn=af9931fb04f7acdd427b569f413167e5&chksm=fd2d77d2ca5afec428a5183dc13ff217a30701ccbdebe05991d729b7f6a22263fa4a4d48892f&scene=21#wechat_redirect)
+[扩展阅读：极客学院Spring教程](https://wiki.jikexueyuan.com/project/spring/)
 
 <img src=".\images\7bUxDv1xrBJq3ZPw.png" alt="image-20200504091713877" style="zoom: 60%;" />
 
@@ -168,7 +168,7 @@ class LogAspect {
 - JDK动态代理：通过Java的反射机制实现，核心是InvocationHandler接口和Proxy类
 - Cglib：以继承的方式动态生成目标类的代理，通过修改字节码实现
 
-# 四、Spring 事务
+# 四、Spring Transactions
 
 ## 隔离级别
 
@@ -210,4 +210,29 @@ Spring事务引入了事务传播的概念，提供多个事务的合并和隔�
 
 # 五、Spring MVC
 
-TODO
+Spring Web MVC 框架提供了`模型-视图-控制器`的体系结构和可以用来开发灵活、松散耦合的 web 应用程序的组件。
+
+- 模型 (Model) 封装了应用程序数据，通常由 POJO 组成
+- 视图 (View) 用于呈现模型数据，生成客户端的浏览器可以解释的HTML文档
+- 控制器 (Controller) 用于处理用户请求，构建合适的模型并将其传递到视图层进行渲染
+
+<img src="E:\Files\Notes\images\gqpxm0MjThXrBB81.png" alt="image-20200510210857631" style="zoom: 67%;" />
+
+## 运行流程
+
+1. 接收到HTTP请求后， `DispatcherServlet` 根据 `HandlerMapping`来选择对应的 `Handler`
+2. `DispatcherServlet`根据获得的`Handler`，选择一个合适的 `HandlerAdapter` 
+3.  `HandlerAdapter`执行完preHandler方法后，会调用真正的处理器开处理请求，并处理相应的业务逻辑
+4. `Handler`处理完业务后，向`DispatcherServlet`返回一个`ModelAndView`对象
+5.  `ViewResolver` 会根据逻辑 `View` 查找实际的 `View`
+6.  `DispaterServlet` 将返回的 `Model` 传给 `View`进行渲染
+7. `DispaterServlet`将渲染好的 `View` 返回给请求者（浏览器）
+
+## @Autowired和@Resource的区别
+
+- @Resource默认是**按照名称**来装配注入的，只有当找不到与名称匹配的bean才会按照类型来装配注入
+- @Autowired默认是**按照类型**装配注入的，如果想按照名称来转配注入，则需要结合@Qualifier一起使用
+- @Resource注解是由JDK提供，而@Autowired是由Spring提供
+
+# 六、MyBatis
+
