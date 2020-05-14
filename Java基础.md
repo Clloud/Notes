@@ -458,7 +458,7 @@ PhantomReference phantomRef = new PhantomReference(s, queue);
 
 <img src=".\images\pSOUAbg3MjZrJxee2djHi9n80Pp5fLQq.png" alt="image-20200428173400027" style="zoom:50%;" />
 
-## 5. 虚拟机性能调优参数
+## 5. 虚拟机性能调优
 
 TODO
 
@@ -555,7 +555,6 @@ public class MyRunnable implements Runnable {
 public class MyCallable implements Callable<Integer> {
     public Integer call() {
         return 0;
-        }
     }
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -780,7 +779,7 @@ CAS(Compare and Swap) 指令需要有 3 个操作数，分别是内存地址 V�
 - 只能保证一个共享变量的原子操作
 - ABA问题（可以使用AtomicStampedReference 来解决）
 
-ThreadLocal
+### ThreadLocal
 
 TODO
 
@@ -815,21 +814,21 @@ Java内存模型(Java Memory Model)本身是一个抽象的概念，描述的是
 
 用于描述 2 个操作的内存可见性，如果操作 A happens-before 操作 B，那么 A 的结果对 B 可见。
 
-- 单一线程原则
+- **单一线程原则**
 在一个线程内，在程序前面的操作先行发生于后面的操作。
-- 锁定规则
+- **锁定规则**
 一个 unlock 操作先行发生于后面对同一个锁的 lock 操作。
-- volatile 变量规则
+- **volatile 变量规则**
 对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作。
-- 传递规则
+- **传递规则**
 如果操作 A 先行发生于操作 B，操作 B 先行发生于操作 C，那么操作 A 先行发生于操作 C。
-- 线程启动规则
+- **线程启动规则**
 Thread 对象的 start() 方法调用先行发生于此线程的每一个动作。
-- 线程加入规则
+- **线程加入规则**
 Thread 对象的结束先行发生于 join() 方法返回。
-- 线程中断规则
+- **线程中断规则**
 对线程 interrupt() 方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过 interrupted() 方法检测到是否有中断发生。
-- 对象终结规则
+- **对象终结规则**
 一个对象的初始化完成（构造函数执行结束）先行发生于它的 finalize() 方法的开始。
 
 ### volatile变量的特殊规则
@@ -931,7 +930,19 @@ public class ProducerAndConsumer {
 
 ### ForkJoin
 
-TODO
+主要用于并行计算中，和 MapReduce 原理类似，都是把大的计算任务拆分成多个小任务并行计算。
+
+对于一个比较大的任务，可以把这个任务分割为若干互不依赖的子任务，将这些子任务分别放到不同的**双端队列**里，并为每个队列创建一个单独的线程来执行队列里的任务。
+
+<img src=".\images\Zy94pODIollq5xNb.png" alt="image-20200514212400365" style="zoom:60%;" />
+
+- 工作窃取算法 (work-stealing)
+
+工作窃取算法允许空闲的线程从其它线程的双端队列中窃取一个任务来执行。窃取的任务必须是最晚的任务，避免和队列所属线程发生竞争。
+
+例如，Thread2 从 Thread1 的队列中拿出最晚的 Task1 任务，Thread1 会拿出 Task2 来执行，这样就避免发生竞争，但是如果队列中只有一个任务时还是会发生竞争。
+
+<img src="E:\Files\Notes\images\AIgKjTz0dalK3s1v.png" alt="image-20200514205601038" style="zoom: 67%;" />
 
 ### 并发工具类
 
@@ -1239,7 +1250,12 @@ Java 的 I/O 大概可以分成以下几类：
 - 网络操作：Socket
 - 新的输入/输出：NIO
 
-## 2. 常见 I/O 模型
+## 2. 序列化
+
+TODO
+
+
+## 3.  I/O 模型
 
 ### BIO
 
@@ -1290,18 +1306,7 @@ NIO由通道(Channel)、缓冲区(Buffer)和选择器(Selector)构成。
 
 NIO 实现了 IO 多路复用中的 Reactor 模型，一个线程 Thread 使用一个选择器 Selector 通过轮询的方式去监听多个通道 Channel 上的事件，从而让一个线程就可以处理多个事件。
 
-<img src=".\images\oG3blPzZsiDOrkxM.png" alt="image-20200503142732684" style="zoom:50%;" />
-#### I/O多路复用
-
-使用一个或少量的线程来处理多个网络I/O，select/poll/epoll 都是 I/O 多路复用的具体实现。
-
-<img src="E:\Files\Notes\images\R1uUjv97iePe05RE.png" alt="image-20200502213921595" style="zoom:50%;" />
-
-|        | 一个进程支持的最大连接数               | 消息传递方式                                   | 效率                                                         | 应用场景                                                     |
-| ------ | -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| select | 由FD_SETSIZE宏确定，32位机器上是32*32  | 内核需要将数据传递到用户空间                   | 每次调用会对连接进行线性遍历，FD剧增会造成`线性下降`的性能问题 | 可移植性更好，实时性好                                       |
-| poll   | 无限制                                 | 同上                                           | 同上                                                         | 如果平台支持并且对实时性要求不高，应该使用 poll 而不是 select |
-| epoll  | 连接数有限，但1G内存可以支持10万个连接 | 通过内核和用户空间共享一块内存来实现，性能较高 | 只有活跃可用的FD才会调用callback函数，效率高                 | 只需要运行在 Linux 平台上，有大量的描述符需要同时轮询，并且这些连接最好是长连接 |
+<img src=".\images\oG3blPzZsiDOrkxM.png" alt="image-20200503142732684" style="zoom:50%;"/>
 
 ### AIO
 
@@ -1317,3 +1322,15 @@ NIO 实现了 IO 多路复用中的 Reactor 模型，一个线程 Thread 使用�
 | 服务线程数 (服务端 : 客户端) | 1 : 1      | 1 : N        | 0 : N        |
 | 复杂度                       | 简单       | 较复杂       | 复杂         |
 | 吞吐量                       | 低         | 高           | 高           |
+
+## 4. I/O多路复用
+
+使用一个或少量的线程来处理多个网络I/O，select/poll/epoll 都是 I/O 多路复用的具体实现。
+
+<img src="E:\Files\Notes\images\R1uUjv97iePe05RE.png" alt="image-20200502213921595" style="zoom:50%;" />
+
+|        | 一个进程支持的最大连接数               | 消息传递方式                                   | 效率                                                         | 应用场景                                                     |
+| ------ | -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| select | 由FD_SETSIZE宏确定，32位机器上是32*32  | 内核需要将数据传递到用户空间                   | 每次调用会对连接进行线性遍历，FD剧增会造成`线性下降`的性能问题 | 可移植性更好，实时性好                                       |
+| poll   | 无限制                                 | 同上                                           | 同上                                                         | 如果平台支持并且对实时性要求不高，应该使用 poll 而不是 select |
+| epoll  | 连接数有限，但1G内存可以支持10万个连接 | 通过内核和用户空间共享一块内存来实现，性能较高 | 只有活跃可用的FD才会调用callback函数，效率高                 | 只需要运行在 Linux 平台上，有大量的描述符需要同时轮询，并且这些连接最好是长连接 |
