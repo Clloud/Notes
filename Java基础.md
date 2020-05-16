@@ -1325,7 +1325,11 @@ NIO 实现了 IO 多路复用中的 Reactor 模型，一个线程 Thread 使用�
 
 ## 4. I/O多路复用
 
-使用一个或少量的线程来处理多个网络I/O，select/poll/epoll 都是 I/O 多路复用的具体实现。
+使用一个或少量的线程来处理多个网络I/O。I/O 多路复用需要实现**事件分发器**，事件分发器将那些读写事件源分发给各读写事件的处理者。事件分发器有两种模式：
+- Reactor模式，基于同步I/O
+- Proactor模式，基于异步I/O
+
+`select / poll / epoll` 是 I/O 多路复用的具体实现。
 
 <img src="E:\Files\Notes\images\R1uUjv97iePe05RE.png" alt="image-20200502213921595" style="zoom:50%;" />
 
