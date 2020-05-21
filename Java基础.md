@@ -589,8 +589,87 @@ public class MyThread extends Thread {
 
 ### 获取线程的返回值
 - 主线程等待法
+
+  ```java
+  public class ReturnValue1 {
+      public static void main(String[] args) throws InterruptedException {
+          MyRunnable task = new MyRunnable();
+          Thread t = new Thread(task);
+          t.start();
+          // 主线程通过循环等待子线程执行完毕
+          while (task.getResult() == null) {
+              Thread.sleep(1000);
+          }
+          System.out.println((task.getResult()));
+      }
+  }
+  
+  class MyRunnable implements Runnable {
+      private String result;
+      @Override
+      public void run() {
+          result = "result";
+      }
+  
+      public String getResult() {
+          return result;
+      }
+  }
+  ```
+
 - 使用Thread类的join()阻塞当前线程以等待子线程处理完毕
+
+  ```java
+  public class ReturnValue2 {
+      public static void main(String[] args) throws InterruptedException {
+          MyRunnable task = new MyRunnable();
+          Thread t = new Thread(task);
+          t.start();
+          // 主线程等待子线程t执行完成
+          t.join();
+          System.out.println((task.getResult()));
+      }
+  }
+  
+  class MyRunnable implements Runnable {
+      private String result;
+      @Override
+      public void run() {
+          result = "result";
+      }
+  
+      public String getResult() {
+          return result;
+      }
+  }
+  ```
+
 - 通过FutureTask或线程池获取
+
+  ```java
+  public class ReturnValue3 {
+      public static void main(String[] args) throws Exception {
+        FutureTask<String> task = new FutureTask<>(new MyCallable());
+          // 方法1：通过FutureTask获取线程返回值
+          new Thread(task).start();
+          System.out.println(task.get());
+  
+          // 方法2：提交给线程池处理，通过future获取线程返回值
+          ExecutorService executor = Executors.newCachedThreadPool();
+          Future<String> future = executor.submit(new MyCallable());
+          System.out.println(future.get());
+      }
+  }
+  
+  class MyCallable implements Callable<String> {
+      @Override
+      public String call() {
+          return "result";
+      }
+  }
+  ```
+  
+  
 
 ## 5. 线程池
 
@@ -780,6 +859,10 @@ CAS(Compare and Swap) 指令需要有 3 个操作数，分别是内存地址 V�
 - ABA问题（可以使用AtomicStampedReference 来解决）
 
 ### ThreadLocal
+
+TODO
+
+### 不可变类型
 
 TODO
 
@@ -1097,9 +1180,50 @@ public class ExchangerExample {
 
 控制多个线程按一定顺序执行。
 
+### 控制线程执行次序
+
+建立三个线程T1、T2、T3，确保 T2 线程在 T1 之后执行，T3 线程在 T2 之后执行。
+
+```java
+// 使用join()
+public class ExecutionOrder {
+    public static void main(String[] args){
+        Thread T1 = new Thread(() -> {
+            System.out.println("T1");
+        });
+
+        Thread T2 = new Thread(() -> {
+            try {
+                // 线程T2等待T1执行完成
+                T1.join();
+                System.out.println("T2");
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        Thread T3 = new Thread(() -> {
+            try {
+                // 线程T3等待T2执行完成
+                T2.join();
+                System.out.println("T3");
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        
+        T3.start();
+        T2.start();
+        T1.start();
+    }
+}
+```
+
 ### 多线程轮流打印信息
 
-建立三个线程，A线程打印10次A，B线程打印10次B，C线程打印10次C，要求线程同时运行，交替打印10次ABC
+建立三个线程A、B、C，A线程打印10次A，B线程打印10次B，C线程打印10次C，要求线程同时运行，交替打印10次ABC.
 
 #### synchronized方案
 
@@ -1207,6 +1331,81 @@ public class MultiThread {
     }
 }
 ```
+
+### 汇总多个线程的执行结果
+
+建立3个线程执行任务，汇总这些线程的执行结果。
+
+```java
+
+```
+
+### 判断多个线程执行结束的顺序
+
+建立3个线程执行一组任务，判断这些线程执行结束的次序。
+
+例如第1个执行完成的线程输出`1: 线程ID`，第2个执行完成的线程输出`2：线程ID`，其他线程以此类推。
+
+```java
+// 使用原子计数器类
+public class TerminatedOrder {
+    public static void main(String[] args) {
+        ExecutorService executor = Executors.newCachedThreadPool();
+        // 创建原子计数器
+        AtomicInteger counter = new AtomicInteger(0);
+
+        executor.execute(() -> {
+            try {
+                Thread.sleep(3000);
+                // 完成任务后，对原子计数器 + 1
+                counter.getAndIncrement();
+                System.out.println(counter + ": " + Thread.currentThread().getName());
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        executor.execute(() -> {
+            try {
+                Thread.sleep(2000);
+                // 完成任务后，对原子计数器 + 1
+                counter.getAndIncrement();
+                System.out.println(counter + ": " + Thread.currentThread().getName());
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        executor.execute(() -> {
+            try {
+                Thread.sleep(1000);
+                // 完成任务后，对原子计数器 + 1
+                counter.getAndIncrement();
+                System.out.println(counter + ": " + Thread.currentThread().getName());
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        executor.shutdown();
+    }
+}
+```
+
+执行结果：
+
+```shell
+1: pool-1-thread-3
+2: pool-1-thread-2
+3: pool-1-thread-1
+```
+
+### 复现死锁
+
+如何解决死锁？
 
 # 四、异常
 
