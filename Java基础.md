@@ -74,7 +74,7 @@
 
 TODO HashMap、ConcurrentHashMap、Hashtable区别
 
-各个集合的扩容方式
+各个集合的初始容量、扩容方式
 
 # 二、Java虚拟机
 
@@ -1337,7 +1337,51 @@ public class MultiThread {
 建立3个线程执行任务，汇总这些线程的执行结果。
 
 ```java
+// 使用CountDownlatch
+public class MergeThreadResult {
+    public static void main(String[] args) throws InterruptedException {
+        int n = 3;
+        // 存放各个线程的执行结果
+        int[] result = new int[n];
+        CountDownLatch countDownLatch = new CountDownLatch(n);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for (int i = 0; i < n; i++) {
+            executor.execute(new MyThread(i, countDownLatch, result));
+        }
 
+        // 主线程等待子线程全部执行完
+        countDownLatch.await();
+        
+        // 主线程汇总结果
+        int answer = 0;
+        for (int i = 0; i < n; i++) {
+            answer += result[i];
+        }
+        System.out.println(answer);
+        executor.shutdown();
+    }
+}
+
+class MyThread extends Thread {
+    private int id;
+    private int[] result;
+    private CountDownLatch countDownLatch;
+
+    public MyThread(int id, CountDownLatch countDownLatch, int[] result) {
+        this.id = id;
+        this.countDownLatch = countDownLatch;
+        this.result = result;
+    }
+
+    @Override
+    public void run() {
+        // 执行一些操作
+        result[id] = id + 1;
+        
+        // 当前线程执行完，计数器减1
+        countDownLatch.countDown();
+    }
+}
 ```
 
 ### 判断多个线程执行结束的顺序
@@ -1402,6 +1446,10 @@ public class TerminatedOrder {
 2: pool-1-thread-2
 3: pool-1-thread-1
 ```
+
+### 实现一个阻塞队列
+
+TODO
 
 ### 复现死锁
 
