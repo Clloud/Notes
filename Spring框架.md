@@ -1,7 +1,5 @@
 # 一、Spring Framework
 
-[官方文档](https://spring.io/projects/spring-framework#overview)
-
 [扩展阅读：极客学院Spring教程](https://wiki.jikexueyuan.com/project/spring/)
 
 <img src=".\images\7bUxDv1xrBJq3ZPw.png" alt="image-20200504091713877" style="zoom: 60%;" />
