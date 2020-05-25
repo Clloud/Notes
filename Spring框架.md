@@ -14,7 +14,7 @@
 
 ## 依赖倒置原则、控制反转、依赖注入的关系
 
-<img src="E:\Files\Notes\images\F4mceiTvTKRGt6aj.png" alt="image-20200504093411587" style="zoom:50%;" />
+<img src=".\images\F4mceiTvTKRGt6aj.png" alt="image-20200504093411587" style="zoom:50%;" />
 
 # 二、Spring IoC
 
@@ -53,7 +53,7 @@ Bean 是一个由配置元数据创建、组装、并通过 Spring IoC 容器所
 
 ### 生命周期
 
-1. 创建过程
+1. **创建过程**
 
 - 实例化Bean
 - 调用ApplicationContextAware的setApplicationContext()方法，注入BeanID、BeanFactory、AppCtx
@@ -62,7 +62,7 @@ Bean 是一个由配置元数据创建、组装、并通过 Spring IoC 容器所
 - 调用`init-method`
 - 调用`BeanPostProcessor.postProcessAfterInitialization()`
 
-2. 销毁过程
+2. **销毁过程**
 
 - 若实现了DisposableBean接口，则调用destory()方法
 - 若配置了destory-method属性，则调用配置的销毁方法
@@ -216,7 +216,7 @@ Spring Web MVC 框架提供了`模型-视图-控制器`的体系结构和可以�
 - 视图 (View) 用于呈现模型数据，生成客户端的浏览器可以解释的HTML文档
 - 控制器 (Controller) 用于处理用户请求，构建合适的模型并将其传递到视图层进行渲染
 
-<img src="E:\Files\Notes\images\gqpxm0MjThXrBB81.png" alt="image-20200510210857631" style="zoom: 67%;" />
+<img src=".\images\gqpxm0MjThXrBB81.png" alt="image-20200510210857631" style="zoom: 67%;" />
 
 ## 运行流程
 
@@ -235,4 +235,11 @@ Spring Web MVC 框架提供了`模型-视图-控制器`的体系结构和可以�
 - @Resource注解是由JDK提供，而@Autowired是由Spring提供
 
 # 六、MyBatis
+
+mybatis 中 #{}和 ${}的区别
+
+- \#{}是预编译处理，${}是字符串替换
+- Mybatis在处理#{}时，会将sql中的#{}替换为?号，调用PreparedStatement的set方法来赋值
+- Mybatis在处理${}时，就是把${}替换成变量的值
+- 使用#{}可以有效的防止SQL注入，提高系统安全性
 
