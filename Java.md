@@ -41,7 +41,7 @@
 
 根据key计算元素所在桶的下标
 
-<img src="E:\Files\Notes\images\qGmXOyQEYbJtQQBe4QcyrABe1drbmxKN.png" alt="image-20200430174139116" style="zoom:67%;" />
+<img src=".\images\qGmXOyQEYbJtQQBe4QcyrABe1drbmxKN.png" alt="image-20200430174139116" style="zoom:67%;" />
 
 #### put() 逻辑
 
@@ -356,7 +356,7 @@ PhantomReference phantomRef = new PhantomReference(s, queue);
 - 新生代：复制算法
 - 老年代：标记 - 清除算法、标记 - 整理 算法
 
-<img src="E:\Files\Notes\images\6CBfqz37rKKTbJV90InwTcGInZEhNbrM.png" alt="image-20200428225101495" style="zoom: 67%;" />
+<img src=".\images\6CBfqz37rKKTbJV90InwTcGInZEhNbrM.png" alt="image-20200428225101495" style="zoom: 67%;" />
 
 ##### Minor GC 和 Full GC
 
@@ -1025,7 +1025,7 @@ public class ProducerAndConsumer {
 
 例如，Thread2 从 Thread1 的队列中拿出最晚的 Task1 任务，Thread1 会拿出 Task2 来执行，这样就避免发生竞争，但是如果队列中只有一个任务时还是会发生竞争。
 
-<img src="E:\Files\Notes\images\AIgKjTz0dalK3s1v.png" alt="image-20200514205601038" style="zoom: 67%;" />
+<img src=".\images\AIgKjTz0dalK3s1v.png" alt="image-20200514205601038" style="zoom: 67%;" />
 
 ### 并发工具类
 
@@ -1464,7 +1464,7 @@ Throwable 可以用来表示任何可以作为异常抛出的类，分为两种�
 - RuntimeException：不可预知的，程序应该尽量避免
 - 非RuntimeException：可预知的，由编译器检查的异常
 
-<img src="E:\Files\Notes\images\px4VINsj0HaJMCCS2pH8pcCpbceGdx1E.png" alt="img" style="zoom: 40%;" />
+<img src=".\images\px4VINsj0HaJMCCS2pH8pcCpbceGdx1E.png" alt="img" style="zoom: 40%;" />
 
 ## 2.常见异常
 
@@ -1578,7 +1578,7 @@ NIO 实现了 IO 多路复用中的 Reactor 模型，一个线程 Thread 使用�
 
 `select / poll / epoll` 是 I/O 多路复用的具体实现。
 
-<img src="E:\Files\Notes\images\R1uUjv97iePe05RE.png" alt="image-20200502213921595" style="zoom:50%;" />
+<img src=".\images\R1uUjv97iePe05RE.png" alt="image-20200502213921595" style="zoom:50%;" />
 
 |        | 一个进程支持的最大连接数               | 消息传递方式                                   | 效率                                                         | 应用场景                                                     |
 | ------ | -------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |

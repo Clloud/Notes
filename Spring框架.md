@@ -87,7 +87,7 @@ BeanFactory是Spring框架的核心接口
 
 ### 体系结构
 
-<img src="E:\Files\Notes\images\x860uRyXpvDOziw3.png" alt="image-20200504150947479" style="zoom: 67%;" />
+<img src=".\images\x860uRyXpvDOziw3.png" alt="image-20200504150947479" style="zoom: 67%;" />
 
 ## ApplicationContext
 
