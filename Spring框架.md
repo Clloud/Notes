@@ -111,7 +111,7 @@ ApplicationContext继承了多个接口，具有以下功能
 | `ContextRefreshedEvent` | `ApplicationContext` 被初始化或刷新时，该事件被发布，也可以在 `ConfigurableApplicationContext` 接口中使用 refresh() 来发生 |
 | `ContextStartedEvent`   | 使用 `ConfigurableApplicationContext` 接口中的 start() 会发布该事件，可以在接受到这个事件后重启任何停止的应用程序 |
 | `ContextStoppedEvent`   | 使用 `ConfigurableApplicationContext` 接口中的 stop() 会发布这个事件，可以在接受到这个事件后做必要的清理的工作 |
-| `ContextClosedEvent`    | 使用 `ConfigurableApplicationContext` 接口中的 close() 关闭时会发布这个事件，`ApplicationContext`不能被刷新或重启 |
+| `ContextClosedEvent`    | 使用 `ConfigurableApplicationContext` 接口中的 close() 会发布这个事件，`ApplicationContext`不能被刷新或重启 |
 | `RequestHandledEvent`   | 这是一个 web-specific 事件，告诉所有 Bean HTTP 请求已经被服务 |
 
 # 三、Spring AOP
