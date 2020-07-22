@@ -28,7 +28,7 @@
 
 ## 3. HashMap
 
-#### 存储结构
+**存储结构**
 
 - JDK 1.7及之前采用数组 + 链表
 
@@ -37,13 +37,13 @@
 
 <img src=".\images\mVgnaq09AhehvZZPBmDdeC6Tj2EtUByL.png" style="zoom: 80%;" />
 
-#### Hash方法实现
+**Hash方法实现**
 
 根据key计算元素所在桶的下标
 
 <img src=".\images\qGmXOyQEYbJtQQBe4QcyrABe1drbmxKN.png" alt="image-20200430174139116" style="zoom:67%;" />
 
-#### put() 逻辑
+**put() 逻辑**
 
 - 如果没有初始化，则进行初始化
 - 对key求Hash值，然后计算数组下标
@@ -52,9 +52,15 @@
 - 如果链表长度大于等于8，将链表转为红黑树；如果链表长度小于6，将红黑树转为链表
 - 如果桶满，扩容2倍后重排
 
-## 4. ConcurrentHashMap
+**Resize**
 
-#### 线程安全的原理
+[HashMap多线程同时扩容出现循环链表的原因](https://juejin.im/post/5a66a08d5188253dc3321da0)
+
+## 4. 线程安全的集合
+
+### ConcurrentHashMap
+
+**线程安全的原理**
 
 - 分段锁
  JDK 1.7的 ConcurrentHashMap 采用了分段锁（Segment），每个分段锁维护着几个桶，多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高。
@@ -62,7 +68,7 @@
 - CAS + synchronized
   JDK 1.8 使用了 CAS 操作来支持更高的并发度，在 CAS 操作失败时使用内置锁 synchronized. 
 
-#### put() 逻辑
+**put() 逻辑**
 
 - 如果没有初始化，则进行初始化
 - 对key求Hash值，然后计算数组下标
@@ -72,7 +78,17 @@
 - 如果链表长度大于等于8，将链表转为红黑树；如果链表长度小于6，将红黑树转为链表
 - 如果桶满，扩容2倍后重排
 
-TODO HashMap、ConcurrentHashMap、Hashtable区别
+### ConcurrentLinkedQueue
+
+一个基于链接节点的无界线程安全队列，它采用先进先出的规则对节点进行排序，当我们添加一个元素的时候，它会添加到队列的尾部；当我们获取一个元素时，它会返回队列头部的元素。
+
+采用CAS操作，允许多个线程并发执行，并且不会因为加锁而阻塞线程，使得并发性能更好。
+
+
+
+**TODO**
+
+HashMap、ConcurrentHashMap、Hashtable区别
 
 各个集合的初始容量、扩容方式
 
@@ -462,6 +478,10 @@ PhantomReference phantomRef = new PhantomReference(s, queue);
 
 TODO
 
+## 6. JIT
+
+[Understanding JIT compiler (just-in-time compiler)](https://aboullaite.me/understanding-jit-compiler-just-in-time-compiler/)
+
 # 三、多线程与并发
 
 ## 1. 进程与线程
@@ -847,6 +867,8 @@ JIT编译时，对运行上下文进行扫描，去除不可能存在竞争的�
 
 ### 乐观锁 - CAS
 
+[CAS原理分析及ABA问题详解](https://juejin.im/post/5c87afa06fb9a049f1550b04)
+
 CAS(Compare and Swap) 指令需要有 3 个操作数，分别是内存地址 V、旧的预期值 A 和新值 B。当执行操作时，只有当 V 的值等于 A，才将 V 的值更新为 B。
 适用于计数器、序列发生器等场景，J.U.C的atomic包提供了常用的原子性数据类型和更新操作工具。
 
@@ -1028,6 +1050,9 @@ public class ProducerAndConsumer {
 <img src=".\images\AIgKjTz0dalK3s1v.png" alt="image-20200514205601038" style="zoom: 67%;" />
 
 ### 并发工具类
+
+#### AQS
+[Java AQS 实现原理](https://juejin.im/post/5d37019a51882564c966add6)
 
 #### CountDownLatch
 
@@ -1449,7 +1474,103 @@ public class TerminatedOrder {
 
 ### 实现一个阻塞队列
 
-TODO
+#### 信号量
+
+```java
+import java.util.LinkedList;
+import java.util.concurrent.Semaphore;
+
+/**
+ * A Queue that supports blocking operations that wait for the queue 
+ * to become non-empty when retrieving an element, and wait for
+ * space to become available in the queue when storing an element.
+ */
+public class BlockingQueue<E> {
+
+    private int capacity = 0;
+
+    private LinkedList<E> queue = new LinkedList<>();
+
+    private Semaphore mutex = new Semaphore(1);
+
+    private Semaphore full;
+
+    private Semaphore empty;
+
+    public BlockingQueue(int capacity) {
+        this.capacity = capacity;
+        full = new Semaphore(0);
+        empty = new Semaphore(capacity);
+    }
+
+    /**
+     * Inserts the specified element into the queue, waiting if necessary
+     * for space to become available.
+     * @param e the element to add
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public void put(E e) throws InterruptedException{
+        empty.acquire();
+        mutex.acquire();
+        queue.addLast(e);
+        mutex.release();
+        full.release();
+    }
+
+    /**
+     * Retrieves and removes the head of the queue, waiting if necessary
+     * until an element becomes available.
+     * @return the head of this deque
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public E take() throws InterruptedException{
+        E e;
+        full.acquire();
+        mutex.acquire();
+        e = queue.removeFirst();
+        mutex.release();
+        empty.release();
+        return e;
+    }
+}
+```
+
+#### wait / notifyAll
+
+```java
+import java.util.LinkedList;
+
+public class BlockingQueue2<E> {
+    private int capacity = 0;
+
+    private LinkedList<E> queue = new LinkedList<>();
+
+    private int size = 0;
+
+    private Object lock = new Object();
+
+    public BlockingQueue2(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public synchronized void put(E e) throws InterruptedException{
+        while (size == capacity) {
+            lock.wait();
+        }
+        queue.add(e);
+        lock.notifyAll();
+    }
+    
+    public synchronized E take() throws InterruptedException{
+        while (size == 0) {
+            lock.wait();
+        }
+        E e = queue.removeFirst();
+        lock.notifyAll();
+        return e;
+    }
+}
+```
 
 ### 复现死锁
 
@@ -1499,7 +1620,9 @@ Java 的 I/O 大概可以分成以下几类：
 
 ## 2. 序列化
 
-TODO
+序列化是将对象转换为可传输格式的过程，是一种数据的持久化手段。广泛应用于网络传输、RMI和RPC等场景中，一般是以字节码或XML格式传输。
+
+反序列化是序列化的逆操作，将字节码或XML编码格式的数据还原为对象。
 
 
 ## 3.  I/O 模型
