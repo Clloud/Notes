@@ -476,7 +476,37 @@ PhantomReference phantomRef = new PhantomReference(s, queue);
 
 ## 5. 虚拟机性能调优
 
-TODO
+[JVM性能调优详解](https://www.jianshu.com/p/6d047863c320)
+
+### 性能调优步骤
+
+- 明确优化目标
+- 发现性能瓶颈
+- 性能调优
+- 通过监控及数据统计工具获得数据
+- 确认是否达到目标
+
+### 常见可调优参数
+
+`-Xms`：初始化堆内存大小，默认为物理内存的1/64(小于1GB)。
+
+`-Xmx`：堆内存最大值。默认空余堆内存大于70%时，JVM会减少堆直到-Xms的最小限制。
+
+`-Xmn`：新生代大小，包括Eden区与2个Survivor区。
+
+`-XX: SurvivorRatio=1`：Eden区与一个Survivor区比值为1:1。
+
+`-XX: MaxDirectMemorySize=1G`：直接内存大小。报java.lang.OutOfMemoryError: Direct buffer memory异常可以上调这个值。
+
+`-XX: +DisableExplicitGC`：禁止运行期显式地调用System.gc()来触发fulll GC。
+
+`-XX：CMSInitiatingOccupancyFraction=60`：老年代内存回收阈值，默认值为68。
+
+`-XX: ConcGCThreads=4`：CMS垃圾回收器并行线程线，推荐值为CPU核心数。
+
+`-XX: ParallelGCThreads=8`：新生代并行收集器的线程数。
+
+`-XX: MaxTenuringThreshold=10`：设置对象能经历多少次Minor GC才晋升到老年代。
 
 ## 6. JIT
 
@@ -1576,6 +1606,8 @@ public class BlockingQueue2<E> {
 
 如何解决死锁？
 
+TODO
+
 # 四、异常
 
 ## 1.异常分类
@@ -1605,6 +1637,91 @@ Throwable 可以用来表示任何可以作为异常抛出的类，分为两种�
 - IOException IO操作异常
 - ClassNotFoundException 找不到指定Class异常
 
+## 3. 如何解决OOM
+
+某Java服务（假设`PID=20136`）出现了OOM（OutOfMemoryError） ，可能的原因有：
+
+- **资源不足**：有可能是内存分配确实过小，而正常业务使用了大量内存
+- **申请资源太多**：某一个对象被频繁申请却没有释放，内存泄漏，最终导致内存耗尽
+- **资源耗尽**：某一个资源被频繁申请，系统资源耗尽，例如：不断创建线程，不断发起网络连接
+
+按照如下步骤进行排查：
+
+1. **检查内存是不是分配过小**
+
+```shell
+jmap -heap 20136
+```
+
+可以查看新生代、老年代堆内存的分配大小以及使用情况，看是否本身分配过小。
+
+```shell
+Heap Configuration:
+   MinHeapFreeRatio         = 0
+   MaxHeapFreeRatio         = 100
+   MaxHeapSize              = 8573157376 (8176.0MB)
+   NewSize                  = 178782208 (170.5MB)
+   MaxNewSize               = 2857369600 (2725.0MB)
+   OldSize                  = 358088704 (341.5MB)
+   NewRatio                 = 2
+   SurvivorRatio            = 8
+   MetaspaceSize            = 21807104 (20.796875MB)
+   CompressedClassSpaceSize = 1073741824 (1024.0MB)
+   MaxMetaspaceSize         = 17592186044415 MB
+   G1HeapRegionSize         = 0 (0.0MB)
+
+Heap Usage:
+PS Young Generation
+Eden Space:
+   capacity = 769654784 (734.0MB)
+   used     = 177607376 (169.3795928955078MB)
+   free     = 592047408 (564.6204071044922MB)
+   23.07623881410188% used
+......
+
+```
+
+2. **寻找最耗内存的对象**
+
+```shell
+jmap -histo:live 20136 | more
+```
+
+以表格的形式显示存活对象的信息，并按照所占内存大小排序，从左到右依次是`实例数`，`所占内存大小`，`类名`。对于实例数较多、占用内存大小较多的实例、类，需要检查相关的代码。
+
+如果发现某类对象占用内存很大（例如几个G），很可能是类对象创建太多且一直未释放。例如：
+
+- 申请完资源后，未调用 close() 或 dispose() 释放资源
+- 消费者消费速度慢或停止消费，而生产者不断往队列中投递任务，导致队列中任务累积过多
+
+```shell
+ num     #instances         #bytes  class name
+----------------------------------------------
+   1:          2171       26991776  [B
+   2:        197043       22190360  [C
+   3:         70355        6754080  java.util.jar.JarFile$JarFileEntry
+   4:        195534        4692816  java.lang.String
+   5:         72266        2312512  org.apache.naming.resources.WARDirContext$Entry
+   6:          7884        1678672  [Ljava.lang.Object;
+   7:         72266        1457576  [Lorg.apache.naming.resources.WARDirContext$Entry;
+   8:         12365        1088120  java.lang.reflect.Method
+   9:          9646        1074088  java.lang.Class
+  10:         19136         612352  java.util.concurrent.ConcurrentHashMap$Node
+```
+
+3. **检查资源是否耗尽**
+
+查看进程创建的线程数、网络连接数等信息，如果资源耗尽，也可能出现OOM。
+
+```shell
+pstree		# 查看进程创建的线程数
+netstat		# 网络连接数
+```
+
+```shell
+ll /proc/20136/fd		# 查看占用句柄
+ll /proc/20136/task 	# 查看线程数
+```
 # 五、 I/O
 
 ## 1. Java I/O 分类
